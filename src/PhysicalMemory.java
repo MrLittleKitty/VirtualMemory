@@ -16,4 +16,14 @@ public class PhysicalMemory {
     //memory[memory[s] + p] accesses that page table
     //      if memory[memory[s] + p] > 0 then it points to a resident page
     //Add the offset (w) to the value at memory[memory[memory[s] + p]] for the physical address
+
+
+    //Initialization of the physical memory:
+    //  Reading in an init file: (the file consists of 2 lines)
+    //      First line: pairs of ints (S, F)
+    //          The page table of segment S starts at physical address F
+    //          If F = -1 then the corresponding page table isnt resident and we put -1 into segment table
+    //      Second line: triple of ints (P S F)
+    //          Page P of segment S starts at address F
+    //          If F = -1 then the corresponding page isnt resident and we put -1 into the page table
 }
