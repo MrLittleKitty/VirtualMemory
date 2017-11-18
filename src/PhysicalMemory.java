@@ -1,3 +1,5 @@
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 public class PhysicalMemory {
 
     //Each integer is one addressable word of memory
@@ -9,7 +11,46 @@ public class PhysicalMemory {
     //Segment table is always in frame 0 and will never be paged
     //A page table may be placed into any free 2 consecutive frames
     //A page may be placed into any free frame
-    int[] memory = new int[524288];
+    private final int[] memory;
+
+    public PhysicalMemory() {
+        memory = new int[524288];
+    }
+
+    public int translateVirtualAddress(VirtualAddress address, boolean read) {
+
+        int pageTableAddress = memory[address.getSegment()];
+        if(pageTableAddress == -1)
+            throw new PageFault("Page fault: Page table not resident");
+
+        //The page table doesn't exist
+        if(pageTableAddress == 0) {
+            if(read)
+                throw new PageFault("Page fault: Page table does not exist");
+
+            //TODO---Create a new, blank page table
+            throw new NotImplementedException();
+        }
+        else {
+
+            int pageAddress = memory[pageTableAddress];
+            if(pageAddress == -1)
+                throw new PageFault("Page fault: Page not resident");
+
+            if(pageAddress == 0) {
+                if(read)
+                    throw new PageFault("Page fault: Page does not exist");
+
+                //TODO---Create a new, blank page
+                throw new NotImplementedException();
+            }
+            else {
+                //Return the final physical address
+                return  memory[pageAddress];
+            }
+        }
+    }
+
 
     //memory[s] where 0 < s < 5011 accesses the segment table
     //      if memory[s] > 0 then it points to a resident page table
