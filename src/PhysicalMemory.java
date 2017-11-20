@@ -26,32 +26,38 @@ public class PhysicalMemory {
         //The page table doesn't exist
         if(pageTableAddress == 0) {
             if(read)
-                throw new PageFault("Page fault: Page table does not exist");
+                throw new NotFoundException("Page fault: Page table does not exist");
 
             //TODO---Create a new, blank page table
             throw new NotImplementedException();
         }
         else {
 
-            int pageAddress = memory[pageTableAddress];
+            int pageAddress = memory[pageTableAddress+address.getPage()];
             if(pageAddress == -1)
                 throw new PageFault("Page fault: Page not resident");
 
             if(pageAddress == 0) {
                 if(read)
-                    throw new PageFault("Page fault: Page does not exist");
+                    throw new NotFoundException("Page fault: Page does not exist");
 
                 //TODO---Create a new, blank page
                 throw new NotImplementedException();
             }
             else {
                 //Return the final physical address
-                return  memory[pageAddress];
+                return  pageAddress+address.getOffset();
             }
         }
     }
 
+    private int startingIndexOfFrame(int frame) {
+        return frame*512;
+    }
 
+    private int createNewPageTable() {
+        return 0;
+    }
     //memory[s] where 0 < s < 5011 accesses the segment table
     //      if memory[s] > 0 then it points to a resident page table
     //memory[memory[s] + p] accesses that page table
