@@ -12,9 +12,11 @@ public class PhysicalMemory {
     //A page table may be placed into any free 2 consecutive frames
     //A page may be placed into any free frame
     private final int[] memory;
+    private final Bitmap bitmap;
 
     public PhysicalMemory() {
         memory = new int[524288];
+        bitmap = new Bitmap();
     }
 
     public int translateVirtualAddress(VirtualAddress address, boolean read) {
@@ -28,36 +30,70 @@ public class PhysicalMemory {
             if(read)
                 throw new NotFoundException("Page fault: Page table does not exist");
 
-            //TODO---Create a new, blank page table
-            throw new NotImplementedException();
+            //Create a new, blank page table
+            pageTableAddress = createNewPageTable();
+            memory[address.getSegment()] = pageTableAddress;
         }
-        else {
 
-            int pageAddress = memory[pageTableAddress+address.getPage()];
-            if(pageAddress == -1)
-                throw new PageFault("Page fault: Page not resident");
+        int pageAddress = memory[pageTableAddress+address.getPage()];
+        if(pageAddress == -1)
+            throw new PageFault("Page fault: Page not resident");
 
-            if(pageAddress == 0) {
-                if(read)
-                    throw new NotFoundException("Page fault: Page does not exist");
+        if(pageAddress == 0) {
+            if(read)
+                throw new NotFoundException("Page fault: Page does not exist");
 
-                //TODO---Create a new, blank page
-                throw new NotImplementedException();
-            }
-            else {
-                //Return the final physical address
-                return  pageAddress+address.getOffset();
-            }
+            //Create a new, blank page
+            pageAddress = createNewPage();
+            memory[pageTableAddress+address.getPage()] = pageAddress;
         }
+
+        //Return the final physical address
+        return  pageAddress+address.getOffset();
+
     }
 
-    private int startingIndexOfFrame(int frame) {
+    private int getFrameFromAddress(int address) {
+        return address/512;
+    }
+
+    private int getAddressOfFrame(int frame) {
         return frame*512;
     }
 
-    private int createNewPageTable() {
-        return 0;
+    private int createNewPage() {
+        int freeFrame = bitmap.getFirstFreeFrame();
+        bitmap.setBit(freeFrame);
+        return getAddressOfFrame(freeFrame);
     }
+
+    private int createNewPageTable() {
+        int freeFrame = bitmap.getFirstTwoFreeFrames();
+        bitmap.setBit(freeFrame);
+        bitmap.setBit(freeFrame+1);
+        return getAddressOfFrame(freeFrame);
+    }
+
+    public void setPageTable(int segment, int pageTable) {
+        memory[segment] = pageTable;
+
+        if(pageTable != -1) {
+            int frameNumber = getFrameFromAddress(pageTable);
+            bitmap.setBit(frameNumber);
+            bitmap.setBit(frameNumber+1);
+        }
+    }
+
+    public void setPage(int segment, int pageTable, int page) {
+        int pageTableAddress = memory[segment];
+        memory[pageTableAddress + pageTable] = page;
+
+        if(page != -1) {
+            int frameNumber = getFrameFromAddress(page);
+            bitmap.setBit(frameNumber);
+        }
+    }
+
     //memory[s] where 0 < s < 5011 accesses the segment table
     //      if memory[s] > 0 then it points to a resident page table
     //memory[memory[s] + p] accesses that page table
