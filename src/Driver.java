@@ -17,11 +17,12 @@ public class Driver {
     //  If the page table entry is 0, allocate a new, blank page
     //      Then update the page table accordingly
     //      Then continue with the translation process
-    public final List<String> outputList;
+    //public final List<String> outputList;
+    private final StringBuilder outputString;
     private final PhysicalMemory memory;
 
     public Driver() {
-        outputList = new ArrayList<>();
+        outputString = new StringBuilder();
         memory = new PhysicalMemory();
     }
 
@@ -61,7 +62,7 @@ public class Driver {
         }
     }
 
-    public void translateAddresses(File virtualAddressFile) {
+    public void translateAddresses(File virtualAddressFile, boolean useTLB) {
         String line = null;
         try(FileReader fileReader = new FileReader(virtualAddressFile)) {
             try(BufferedReader reader = new BufferedReader(fileReader)) {
@@ -81,20 +82,31 @@ public class Driver {
             VirtualAddress virtualAddress = new VirtualAddress(Integer.parseInt(address));
 
             try {
-                int physicalAddress = memory.translateVirtualAddress(virtualAddress, mode.equalsIgnoreCase("0"));
-                output(physicalAddress+"");
+                TranslatedAddress physicalAddress = memory.translateVirtualAddress(virtualAddress, mode.equalsIgnoreCase("0"), useTLB);
+                if(useTLB) {
+                    output(physicalAddress.tlbHit ? "h" : "m");
+                }
+                output(physicalAddress.address+"");
             }
             catch (PageFault fault) {
+                if(useTLB)
+                    output("m");
                 output("pf");
             }
             catch (NotFoundException notFound) {
+                if(useTLB)
+                    output("m");
                 output("err");
             }
         }
     }
 
     private void output(String message) {
-        this.outputList.add(message);
+        this.outputString.append(message).append(" ");
         System.out.println(message);
+    }
+
+    public String getOutputString() {
+        return outputString.toString();
     }
 }

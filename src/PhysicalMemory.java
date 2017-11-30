@@ -13,14 +13,40 @@ public class PhysicalMemory {
     //A page may be placed into any free frame
     private final int[] memory;
     private final Bitmap bitmap;
+    private final TLB tlb;
 
     public PhysicalMemory() {
         memory = new int[524288];
         bitmap = new Bitmap();
+        tlb = new TLB();
     }
 
-    public int translateVirtualAddress(VirtualAddress address, boolean read) {
+    public TranslatedAddress translateVirtualAddress(VirtualAddress address, boolean read, boolean useTLB) {
 
+        if(useTLB) {
+
+            //If we find a match in the tlb then use it
+            if(tlb.containsSP(address.getSP())) {
+
+                int newAddress = tlb.translateAddress(address);
+                return new TranslatedAddress(newAddress, true);
+            }
+            else {
+                //If we don't find a match then we translate normally and update the tlb
+                int newAddress = translateAddress(address,read);
+                int f = newAddress-address.getOffset();
+                tlb.addEntry(address.getSP(),f);
+
+                return new TranslatedAddress(newAddress,false);
+            }
+        }
+        else {
+            //If we aren't using the TLB then translate the address normally
+            return new TranslatedAddress(translateAddress(address, read),false);
+        }
+    }
+
+    private int translateAddress(VirtualAddress address, boolean read) {
         int pageTableAddress = memory[address.getSegment()];
         if(pageTableAddress == -1)
             throw new PageFault("Page fault: Page table not resident");
@@ -50,7 +76,6 @@ public class PhysicalMemory {
 
         //Return the final physical address
         return  pageAddress+address.getOffset();
-
     }
 
     private int getFrameFromAddress(int address) {

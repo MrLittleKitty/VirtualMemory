@@ -20,19 +20,13 @@ public class DriverTests {
 
         driver.init(initFile);
 
-        driver.translateAddresses(addresses);
+        driver.translateAddresses(addresses,false);
 
-        StringBuilder builder = new StringBuilder();
-        for(String str : driver.outputList) {
-            builder.append(str).append(" ");
-        }
-        builder.setLength(builder.length()-1);
-
-        String outputFileString = getOutputFileString();
+       String outputFileString = getOutputFileString();
 
         assert outputFileString != null;
 
-        assert builder.toString().equalsIgnoreCase(outputFileString);
+        assert driver.getOutputString().equalsIgnoreCase(outputFileString);
     }
 
     private String getOutputFileString() {
