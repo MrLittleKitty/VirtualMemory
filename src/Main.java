@@ -13,32 +13,20 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Please enter the path for the init file");
-//        String initPath = scanner.nextLine();
-
-        //TODO---remove
-        String initPath = "tests/files/init.txt";
+        String initPath = scanner.nextLine();
 
         System.out.println("Please enter the path for the input file");
-//        String inputPath = scanner.nextLine();
-
-        //TODO---remove
-        String inputPath = "tests/files/virtualAddresses.txt";
+        String inputPath = scanner.nextLine();
 
         System.out.println("Please enter the path for the output file");
-//        String outputPath = scanner.nextLine();
-
-        //TODO---Remove
-        String outputPath = "output.txt";
+        String outputPath = scanner.nextLine();
 
         String useTLB = null;
 
         System.out.println("Use TLB? Y/N");
 
         do {
-//            useTLB = scanner.next();
-
-            //TODO---Remove
-            useTLB = "y";
+            useTLB = scanner.next();
         }
         while(!useTLB.equalsIgnoreCase("y")
                 && !useTLB.equalsIgnoreCase("n"));

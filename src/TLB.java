@@ -19,7 +19,6 @@ public class TLB {
         }
     }
 
-
     public int translateAddress(VirtualAddress address) {
         for(int i = 0; i < SPs.length; i++) {
             if(SPs[i] == address.getSP()) {
@@ -37,6 +36,8 @@ public class TLB {
         throw new IllegalStateException("We should definitely not get here");
     }
 
+    //0 == old
+    //3 == new
     public void addEntry(int sp, int f) {
 
         for(int i = 0; i < LRUs.length; i++) {
